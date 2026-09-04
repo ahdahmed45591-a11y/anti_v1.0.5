@@ -1,0 +1,32 @@
+# Sauvegarde quotidienne : avance la branche copiev1.0.5 sur main.
+#
+# ponytail: un push fast-forward suffit -- copiev1.0.5 ne recoit jamais de
+# commit propre, elle est toujours un ancetre de main. Pas de --force : si le
+# push echoue (main reecrit), le workflow passe au rouge et la sauvegarde
+# precedente reste intacte, ce qui est exactement ce qu'on attend d'une
+# sauvegarde.
+name: Sync copiev1.0.5
+
+on:
+  schedule:
+    # 03:00 UTC = 03:00 Abidjan. Le cron GitHub peut decaler de quelques
+    # dizaines de minutes aux heures chargees, sans importance ici.
+    - cron: "0 3 * * *"
+  workflow_dispatch:
+
+jobs:
+  sync:
+    name: Avancer copiev1.0.5 sur main
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+    - name: Checkout main
+      uses: actions/checkout@v4
+      with:
+        ref: main
+        fetch-depth: 0
+
+    - name: Push vers copiev1.0.5
+      run: git push origin HEAD:copiev1.0.5
