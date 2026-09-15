@@ -293,21 +293,28 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     {/* Inline Quick Actions */}
                     <td className="px-6 py-4">
                       <div className="flex items-center justify-center gap-2" onClick={(e) => e.stopPropagation()}>
-                        <button 
+                        {/* ponytail: un depot est credite automatiquement (webhook Jeko),
+                            le backend refuse deja validate/reject dessus -- pas la peine
+                            d'offrir un bouton qui echoue a tous les coups. */}
+                        {tx.type !== 'DEPOSIT' && (
+                        <button
                           onClick={() => onApproveTransaction(tx.id)}
                           className="p-1.5 text-[#006d31] hover:bg-[#8bf6a1]/20 rounded-lg transition-colors"
                           title="Approuver la transaction"
                         >
                           <CheckCircle2 className="w-5 h-5" />
                         </button>
-                        <button 
+                        )}
+                        {tx.type !== 'DEPOSIT' && (
+                        <button
                           onClick={() => onRejectTransaction(tx.id)}
                           className="p-1.5 text-[#ba1a1a] hover:bg-[#ffdad6] rounded-lg transition-colors"
                           title="Rejeter la transaction"
                         >
                           <XCircle className="w-5 h-5" />
                         </button>
-                        <button 
+                        )}
+                        <button
                           onClick={() => onSelectTransaction(tx)}
                           className="p-1.5 text-[#ff8200] hover:bg-[#ffdcc6]/30 rounded-lg transition-colors"
                           title="Voir les détails"

@@ -1224,6 +1224,16 @@ def reject_transaction(request, tx_id):
             return Response({"error": "Transaction introuvable."}, status=404)
         if tx.status != "pending":
             return Response({"error": f'Transaction déjà "{tx.status}".'}, status=400)
+        if tx.type == "DEPOSIT":
+            # ponytail: meme garde que validate_transaction. Sans elle, un
+            # depot rejete a la main sort du statut "pending" -- le webhook
+            # Jeko (qui ne cherche que du "pending") ne retrouve plus rien a
+            # crediter quand le paiement arrive vraiment : l'argent part chez
+            # Jeko sans jamais toucher le solde du client.
+            return Response(
+                {"error": "Les dépôts sont crédités automatiquement à la confirmation du paiement."},
+                status=400,
+            )
 
         tx.status = "rejected"
         tx.rejection_reason = request.data.get("reason") or "Rejeté par l'administrateur."

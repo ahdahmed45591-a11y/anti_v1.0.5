@@ -211,16 +211,22 @@ export const DashboardBaouView: React.FC<DashboardBaouViewProps> = ({
                     <td className="px-6 py-4 font-sans text-[13px] text-black/60">{tx.dateString}</td>
                     <td className="px-6 py-4">
                       <div className="flex items-center justify-center gap-2" onClick={e => e.stopPropagation()}>
+                        {/* ponytail: depot credite automatiquement (webhook Jeko),
+                            le backend refuse deja validate/reject dessus. */}
+                        {tx.type !== 'DEPOSIT' && (
                         <button onClick={() => onApproveTransaction(tx.id)}
                           className="p-1.5 rounded-lg hover:bg-black/5 transition-colors" style={{ color: GREEN_DARK }}
                           title="Approuver la transaction">
                           <CheckCircle2 className="w-5 h-5" />
                         </button>
+                        )}
+                        {tx.type !== 'DEPOSIT' && (
                         <button onClick={() => onRejectTransaction(tx.id)}
                           className="p-1.5 rounded-lg hover:bg-red-50 transition-colors text-red-600"
                           title="Rejeter la transaction">
                           <XCircle className="w-5 h-5" />
                         </button>
+                        )}
                         <button onClick={() => onSelectTransaction(tx)}
                           className="p-1.5 rounded-lg hover:bg-black/5 transition-colors" style={{ color: ORANGE }}
                           title="Voir les détails">

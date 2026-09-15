@@ -323,6 +323,14 @@ export default function App() {
   // ── Transaction actions (real API) ───────────────────────
   const handleApproveTransaction = async (id: string) => {
     if (!token) return;
+    // ponytail: un depot est credite automatiquement par le webhook Jeko
+    // (voir jeko_webhook cote backend, qui refuse deja ce PATCH) -- garde
+    // ici aussi pour ne pas meme tenter l'appel depuis les widgets tableau
+    // de bord qui n'ont pas leur propre filtre (DashboardView, DashboardBaouView).
+    if (transactions.find(t => t.id === id)?.type === 'DEPOSIT') {
+      triggerToast('Les dépôts sont crédités automatiquement, aucune validation requise.', 'error');
+      return;
+    }
     try {
       const res = await fetch(`${API_BASE}/transactions/${id}/validate`, {
         method: 'PATCH',
@@ -342,6 +350,10 @@ export default function App() {
 
   const handleRejectTransaction = async (id: string, reason?: string) => {
     if (!token) return;
+    if (transactions.find(t => t.id === id)?.type === 'DEPOSIT') {
+      triggerToast('Les dépôts sont crédités automatiquement, aucun rejet manuel possible.', 'error');
+      return;
+    }
     try {
       const res = await fetch(`${API_BASE}/transactions/${id}/reject`, {
         method: 'PATCH',
