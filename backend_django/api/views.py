@@ -12,6 +12,7 @@ import functools
 import hashlib
 import io
 import json
+import threading
 import os
 import uuid
 from decimal import ROUND_HALF_UP, Decimal, InvalidOperation
@@ -478,7 +479,11 @@ def register(request):
         balance=Decimal(0),
         joined_at=now_iso(),
     )
-    send_welcome_email(user)
+    # ponytail: thread plutot qu'une file (Celery...) -- WhatsApp + SMTP
+    # pouvaient prendre jusqu'a 20 s et faire expirer la requete cote appli
+    # alors que le compte etait deja cree. Un email perdu si le worker
+    # redemarre pile a ce moment : acceptable pour un email de bienvenue.
+    threading.Thread(target=send_welcome_email, args=(user,), daemon=True).start()
     return Response({"success": True, "user": user.as_dict()}, status=201)
 
 

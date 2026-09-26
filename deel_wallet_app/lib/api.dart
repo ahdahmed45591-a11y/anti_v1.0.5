@@ -4,6 +4,12 @@ import 'package:http/http.dart' as http;
 /// Backend de prod sur Render — plus d'ecran de config, une seule cible.
 const _baseUrl = 'https://baou-finance-backend.onrender.com';
 
+/// ponytail: 60 s et pas 10 s -- l'instance Render gratuite s'endort et met
+/// ~50 s a se reveiller ; a 10 s la 1re requete (souvent l'inscription)
+/// echouait avec "Impossible de joindre le serveur". Redescendre si Render
+/// passe en offre payante (plus de mise en veille).
+const _timeout = Duration(seconds: 60);
+
 class ApiException implements Exception {
   ApiException(this.message);
   final String message;
@@ -46,7 +52,7 @@ class Api {
   static Future<Map<String, dynamic>> get(String path) async {
     try {
       final r = await http.get(_uri(path), headers: _headers)
-          .timeout(const Duration(seconds: 10));
+          .timeout(_timeout);
       return _decode(r);
     } on ApiException {
       rethrow;
@@ -59,7 +65,7 @@ class Api {
     try {
       final r = await http
           .post(_uri(path), headers: _headers, body: jsonEncode(body))
-          .timeout(const Duration(seconds: 10));
+          .timeout(_timeout);
       return _decode(r);
     } on ApiException {
       rethrow;
@@ -72,7 +78,7 @@ class Api {
     try {
       final r = await http
           .patch(_uri(path), headers: _headers, body: jsonEncode(body))
-          .timeout(const Duration(seconds: 10));
+          .timeout(_timeout);
       return _decode(r);
     } on ApiException {
       rethrow;
