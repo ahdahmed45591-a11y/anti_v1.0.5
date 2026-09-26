@@ -41,3 +41,6 @@ jobs:
         name: BAOU-Finance-Mobile.apk
         path: deel_wallet_app/build/app/outputs/flutter-apk/app-release.apk
         if-no-files-found: error
+        # ponytail: 53 Mo par build ; 3 jours suffisent pour telecharger
+        # l'APK. Au-dela, le quota de stockage GitHub sature et l'upload echoue.
+        retention-days: 3
