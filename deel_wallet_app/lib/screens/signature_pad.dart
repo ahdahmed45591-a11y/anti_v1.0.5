@@ -50,16 +50,27 @@ class SignaturePadState extends State<SignaturePad> {
           // sinon la capture (boundary.toImage) inclut des pixels hors zone.
           child: ClipRRect(
             borderRadius: BorderRadius.circular(8),
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque, // capte le geste meme sur zone non peinte
-              onPanStart: (d) => _addPoint(d.localPosition),
-              onPanUpdate: (d) => _addPoint(d.localPosition),
-              onPanEnd: (_) => _addPoint(null),
-              child: SizedBox.expand(
-                child: CustomPaint(
-                  painter: _SignaturePainter(List.from(_points)),
+            child: Stack(
+              children: [
+                if (_points.isEmpty)
+                  const Center(
+                    child: Text(
+                      'Écrivez votre signature ici',
+                      style: TextStyle(color: Colors.black26, fontSize: 13, fontStyle: FontStyle.italic),
+                    ),
+                  ),
+                GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onPanStart: (d) => _addPoint(d.localPosition),
+                  onPanUpdate: (d) => _addPoint(d.localPosition),
+                  onPanEnd: (_) => _addPoint(null),
+                  child: SizedBox.expand(
+                    child: CustomPaint(
+                      painter: _SignaturePainter(List<Offset?>.from(_points)),
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ),
           ),
         ),
@@ -72,29 +83,47 @@ class _SignaturePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.black
-      ..strokeWidth = 3.5
+    // Fond blanc explicite pour garantir le contraste sur tous les modes d'affichage
+    canvas.drawRect(Offset.zero & size, Paint()..color = Colors.white);
+
+    final strokePaint = Paint()
+      ..color = const Color(0xFF000000) // Noir 100% opaque
+      ..strokeWidth = 4.0
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round
       ..style = PaintingStyle.stroke
       ..isAntiAlias = true;
 
-    for (var i = 0; i < points.length - 1; i++) {
-      final p1 = points[i];
-      final p2 = points[i + 1];
-      if (p1 != null && p2 != null) {
-        canvas.drawLine(p1, p2, paint);
-      } else if (p1 != null && p2 == null) {
-        canvas.drawCircle(
-          p1,
-          1.75,
-          Paint()
-            ..color = Colors.black
-            ..style = PaintingStyle.fill,
-        );
+    final dotPaint = Paint()
+      ..color = const Color(0xFF000000)
+      ..style = PaintingStyle.fill
+      ..isAntiAlias = true;
+
+    final path = Path();
+    bool inPath = false;
+
+    for (var i = 0; i < points.length; i++) {
+      final p = points[i];
+      if (p == null) {
+        inPath = false;
+        continue;
+      }
+
+      final next = (i + 1 < points.length) ? points[i + 1] : null;
+      if (!inPath) {
+        if (next == null) {
+          // Point isolé : dessiner un point plein
+          canvas.drawCircle(p, 2.0, dotPaint);
+        } else {
+          path.moveTo(p.dx, p.dy);
+          inPath = true;
+        }
+      } else {
+        path.lineTo(p.dx, p.dy);
       }
     }
+
+    canvas.drawPath(path, strokePaint);
   }
 
   @override
