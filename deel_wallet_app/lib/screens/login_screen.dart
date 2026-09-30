@@ -56,14 +56,16 @@ class _LoginScreenState extends State<LoginScreen> {
             child: ListView(
               padding: const EdgeInsets.all(24),
               children: [
-                const Center(child: Logo(height: 64)),
+                const Center(child: Logo(height: 110)),
                 const SizedBox(height: 32),
                 const Text('Se connecter',
+                    textAlign: TextAlign.center,
                     style:
-                        TextStyle(fontSize: 24, fontWeight: FontWeight.w700)),
-                const SizedBox(height: 6),
+                        TextStyle(fontSize: 26, fontWeight: FontWeight.w700)),
+                const SizedBox(height: 8),
                 const Text('Accédez à votre compte BAOU Finance.',
-                    style: TextStyle(color: Colors.black54)),
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.black54, fontSize: 15)),
                 const SizedBox(height: 24),
                 TextFormField(
                   controller: _email,
