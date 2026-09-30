@@ -4,6 +4,7 @@ import '../api.dart';
 import '../data.dart';
 import '../main.dart';
 import 'common.dart';
+import 'contract_screen.dart';
 import 'kyc_summary_screen.dart';
 
 class ProfileTab extends StatelessWidget {
@@ -103,6 +104,14 @@ class ProfileTab extends StatelessWidget {
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () => Navigator.push(
                         context, MaterialPageRoute(builder: (_) => const KycSummaryScreen())),
+                  ),
+                  const Divider(height: 1),
+                  ListTile(
+                    leading: const Icon(Icons.draw_outlined),
+                    title: const Text('Contrat SGI BRVM (Signature)'),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => Navigator.push(
+                        context, MaterialPageRoute(builder: (_) => const ContractScreen())),
                   ),
                   const Divider(height: 1),
                   ListTile(
