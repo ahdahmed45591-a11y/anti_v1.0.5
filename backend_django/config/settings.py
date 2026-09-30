@@ -86,16 +86,31 @@ ROOT_URLCONF = "api.urls"
 WSGI_APPLICATION = "config.wsgi.application"
 APPEND_SLASH = False  # les clients appellent /api/stocks sans slash final
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.environ.get("POSTGRES_DB", "baou"),
-        "USER": os.environ.get("POSTGRES_USER", "baou"),
-        "PASSWORD": os.environ.get("POSTGRES_PASSWORD", "baou"),
-        "HOST": os.environ.get("POSTGRES_HOST", "db"),
-        "PORT": os.environ.get("POSTGRES_PORT", "5432"),
+db_url = os.environ.get("DATABASE_URL")
+if db_url:
+    from urllib.parse import urlparse
+    url = urlparse(db_url)
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": url.path.lstrip("/"),
+            "USER": url.username or "baou",
+            "PASSWORD": url.password or "baou",
+            "HOST": url.hostname or "localhost",
+            "PORT": str(url.port or 5432),
+        }
     }
-}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": os.environ.get("POSTGRES_DB", "baou"),
+            "USER": os.environ.get("POSTGRES_USER", "baou"),
+            "PASSWORD": os.environ.get("POSTGRES_PASSWORD", "baou"),
+            "HOST": os.environ.get("POSTGRES_HOST", "db"),
+            "PORT": os.environ.get("POSTGRES_PORT", "5432"),
+        }
+    }
 
 REST_FRAMEWORK = {
     # JSON uniquement. L'API navigable de DRF exige des templates et
