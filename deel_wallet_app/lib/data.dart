@@ -196,8 +196,14 @@ class Repo {
   }
 
   /// L'API ne renvoie pas de jeton a l'inscription : on enchaine avec login.
-  static Future<void> register(String name, String email, String password) async {
-    await Api.post('/api/auth/register', {'name': name, 'email': email, 'password': password});
+  static Future<void> register(String name, String email, String password, {int? age}) async {
+    final body = {
+      'name': name,
+      'email': email,
+      'password': password,
+      if (age != null) 'age': age,
+    };
+    await Api.post('/api/auth/register', body);
     await login(email, password);
   }
 

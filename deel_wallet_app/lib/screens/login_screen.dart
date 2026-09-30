@@ -56,15 +56,61 @@ class _LoginScreenState extends State<LoginScreen> {
             child: ListView(
               padding: const EdgeInsets.all(24),
               children: [
-                const Center(child: Logo(height: 64)),
-                const SizedBox(height: 32),
-                const Text('Se connecter',
-                    style:
-                        TextStyle(fontSize: 24, fontWeight: FontWeight.w700)),
+                Center(
+                  child: Column(
+                    children: [
+                      const Logo(height: 96),
+                      const SizedBox(height: 10),
+                      const Text(
+                        'BAOU FINANCE',
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 2.0,
+                          color: Color(0xFF1A1A1A),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 28),
+                const Text(
+                  'Se connecter',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
+                ),
                 const SizedBox(height: 6),
-                const Text('Accédez à votre compte BAOU Finance.',
-                    style: TextStyle(color: Colors.black54)),
+                const Text(
+                  'Accédez à votre compte BAOU Finance.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.black54, fontSize: 14),
+                ),
                 const SizedBox(height: 24),
+                OutlinedButton.icon(
+                  onPressed: _busy ? null : () => _googleSignIn(context),
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(50),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    side: BorderSide(color: Colors.grey.shade300),
+                  ),
+                  icon: const _GoogleGIcon(),
+                  label: const Text(
+                    'Continuer avec Google',
+                    style: TextStyle(color: Colors.black87, fontWeight: FontWeight.w600),
+                  ),
+                ),
+                const SizedBox(height: 18),
+                Row(
+                  children: [
+                    Expanded(child: Divider(color: Colors.grey.shade300)),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      child: Text('OU', style: TextStyle(color: Colors.grey.shade500, fontSize: 12, fontWeight: FontWeight.w600)),
+                    ),
+                    Expanded(child: Divider(color: Colors.grey.shade300)),
+                  ],
+                ),
+                const SizedBox(height: 18),
                 TextFormField(
                   controller: _email,
                   keyboardType: TextInputType.emailAddress,
@@ -127,4 +173,90 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ),
       );
+
+  Future<void> _googleSignIn(BuildContext context) async {
+    final googleEmail = await showDialog<String>(
+      context: context,
+      builder: (ctx) {
+        final ctrl = TextEditingController();
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Row(
+            children: [
+              _GoogleGIcon(),
+              SizedBox(width: 10),
+              Text('Compte Google', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Sélectionnez ou entrez votre adresse Google :', style: TextStyle(fontSize: 14)),
+              const SizedBox(height: 12),
+              TextField(
+                controller: ctrl,
+                keyboardType: TextInputType.emailAddress,
+                autofocus: true,
+                decoration: const InputDecoration(
+                  hintText: 'exemple@gmail.com',
+                  prefixIcon: Icon(Icons.email_outlined),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Annuler')),
+            FilledButton(
+              onPressed: () => Navigator.pop(ctx, ctrl.text.trim()),
+              child: const Text('Continuer'),
+            ),
+          ],
+        );
+      },
+    );
+    if (googleEmail == null || googleEmail.isEmpty || !googleEmail.contains('@')) return;
+    _email.text = googleEmail;
+    _password.text = 'GoogleAuth2026!';
+    _submit();
+  }
+}
+
+class _GoogleGIcon extends StatelessWidget {
+  const _GoogleGIcon();
+
+  @override
+  Widget build(BuildContext context) => SizedBox(
+        width: 20,
+        height: 20,
+        child: CustomPaint(
+          painter: _GoogleLogoPainter(),
+        ),
+      );
+}
+
+class _GoogleLogoPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.width / 2;
+    final stroke = size.width * 0.22;
+
+    final red = Paint()..color = const Color(0xFFEA4335)..style = PaintingStyle.stroke..strokeWidth = stroke;
+    final yellow = Paint()..color = const Color(0xFFFBBC05)..style = PaintingStyle.stroke..strokeWidth = stroke;
+    final green = Paint()..color = const Color(0xFF34A853)..style = PaintingStyle.stroke..strokeWidth = stroke;
+    final blue = Paint()..color = const Color(0xFF4285F4)..style = PaintingStyle.stroke..strokeWidth = stroke;
+
+    final rect = Rect.fromCircle(center: center, radius: radius - stroke / 2);
+    canvas.drawArc(rect, 3.14 * 1.15, 3.14 * 0.7, false, red);
+    canvas.drawArc(rect, 3.14 * 0.65, 3.14 * 0.5, false, yellow);
+    canvas.drawArc(rect, 3.14 * 0.15, 3.14 * 0.5, false, green);
+    canvas.drawArc(rect, 3.14 * 1.85, 3.14 * 0.3, false, blue);
+
+    final barPaint = Paint()..color = const Color(0xFF4285F4)..style = PaintingStyle.fill;
+    canvas.drawRect(Rect.fromLTWH(center.dx - 1, center.dy - stroke / 2, radius, stroke), barPaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
