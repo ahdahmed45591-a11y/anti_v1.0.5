@@ -43,7 +43,7 @@ class SignaturePadState extends State<SignaturePad> {
           height: 160,
           width: double.infinity,
           decoration: BoxDecoration(
-              border: Border.all(color: Colors.black26),
+              border: Border.all(color: Colors.black38, width: 1.5),
               borderRadius: BorderRadius.circular(8),
               color: Colors.white),
           // ClipRRect : le trait ne doit jamais deborder du cadre arrondi,
@@ -55,7 +55,11 @@ class SignaturePadState extends State<SignaturePad> {
               onPanStart: (d) => _addPoint(d.localPosition),
               onPanUpdate: (d) => _addPoint(d.localPosition),
               onPanEnd: (_) => _addPoint(null),
-              child: SizedBox.expand(child: CustomPaint(painter: _SignaturePainter(_points))),
+              child: SizedBox.expand(
+                child: CustomPaint(
+                  painter: _SignaturePainter(List.from(_points)),
+                ),
+              ),
             ),
           ),
         ),
@@ -68,21 +72,31 @@ class _SignaturePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    // ponytail: noir opaque + trait plus epais -- Colors.black87 (87%
-    // d'opacite) + strokeWidth 2.4 pouvait paraitre invisible sur certains
-    // ecrans/backends de rendu. Colors.black (100%) + 3.5 est net partout.
     final paint = Paint()
       ..color = Colors.black
       ..strokeWidth = 3.5
       ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round
       ..style = PaintingStyle.stroke
       ..isAntiAlias = true;
+
     for (var i = 0; i < points.length - 1; i++) {
-      final p1 = points[i], p2 = points[i + 1];
-      if (p1 != null && p2 != null) canvas.drawLine(p1, p2, paint);
+      final p1 = points[i];
+      final p2 = points[i + 1];
+      if (p1 != null && p2 != null) {
+        canvas.drawLine(p1, p2, paint);
+      } else if (p1 != null && p2 == null) {
+        canvas.drawCircle(
+          p1,
+          1.75,
+          Paint()
+            ..color = Colors.black
+            ..style = PaintingStyle.fill,
+        );
+      }
     }
   }
 
   @override
-  bool shouldRepaint(covariant _SignaturePainter old) => old.points != points;
+  bool shouldRepaint(covariant _SignaturePainter old) => true;
 }
