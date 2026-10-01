@@ -46,9 +46,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   }
 
   Future<void> _resetPassword() async {
-    if (_code.text.trim().isEmpty || _newPassword.text.length < 6) {
+    final pwd = _newPassword.text;
+    final hasLetter = pwd.contains(RegExp(r'[A-Za-z]'));
+    final hasDigit = pwd.contains(RegExp(r'\d'));
+    if (_code.text.trim().isEmpty || pwd.length < 8 || !hasLetter || !hasDigit) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Collez le code reçu et choisissez un mot de passe (6 caractères min.)')));
+          content: Text('Collez le code et saisissez un mot de passe (8 car. min, lettres et chiffres)')));
       return;
     }
     setState(() => _busy = true);

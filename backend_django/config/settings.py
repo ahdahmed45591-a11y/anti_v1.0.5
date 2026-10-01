@@ -32,7 +32,7 @@ UPLOAD_DIR = os.environ.get("UPLOAD_DIR", "/data/uploads")
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "dramancis40@gmail.com")
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "baoufinance@gmail.com")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
 DEFAULT_FROM_EMAIL = f"BAOU Finance <{EMAIL_HOST_USER}>"
 # ponytail: sans timeout, un SMTP sortant bloque (Render bloque parfois le

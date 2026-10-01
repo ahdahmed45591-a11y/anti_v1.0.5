@@ -332,11 +332,7 @@ def login(request):
 
 
 def send_welcome_email(user):
-    """Email de bienvenue avec lien de confirmation, envoye depuis le compte
-    support (EMAIL_HOST_USER). ponytail: si EMAIL_HOST_PASSWORD n'est pas
-    configure (mot de passe d'application Gmail), on n'essaie meme pas
-    d'ouvrir la connexion SMTP -- une inscription ne doit jamais echouer a
-    cause de l'email."""
+    """Email de bienvenue et confirmation d'inscription envoyé depuis baoufinance@gmail.com."""
     verify_token = jwt.encode(
         {
             "userId": user.id,
@@ -348,19 +344,22 @@ def send_welcome_email(user):
     )
     link = f"{settings.BACKEND_PUBLIC_URL}/api/auth/verify-email?token={verify_token}"
     zavu.send(user.whatsapp,
-              f"Bienvenue sur BAOU Finance, {user.name} ! Confirmez votre "
-              "compte via le lien recu par email pour commencer a investir.")
+              f"Bienvenue sur BAOU Finance, {user.name} ! Votre compte a bien été créé.")
     if not settings.EMAIL_HOST_PASSWORD:
         return
     try:
         send_mail(
-            subject="Bienvenue sur BAOU Finance — confirmez votre compte",
+            subject="Bienvenue sur BAOU Finance — Inscription confirmée",
             message=(
                 f"Bonjour {user.name},\n\n"
-                "Votre compte BAOU Finance a bien ete cree.\n"
-                f"Confirmez votre adresse email en ouvrant ce lien depuis votre telephone :\n{link}\n\n"
-                "Le lien ouvre directement l'application BAOU si elle est installee.\n\n"
-                "L'equipe BAOU Finance"
+                "Félicitations ! Votre inscription sur BAOU Finance a été effectuée avec succès.\n\n"
+                "Vous pouvez dès à présent vous connecter sur l'application mobile BAOU Finance pour compléter "
+                "votre dossier KYC, signer votre contrat SGI et commencer à investir en bourse (BRVM).\n\n"
+                f"Pour confirmer votre adresse e-mail, vous pouvez ouvrir ce lien depuis votre téléphone :\n{link}\n\n"
+                "Si vous n'êtes pas à l'origine de cette inscription, veuillez contacter le support à baoufinance@gmail.com.\n\n"
+                "Cordialement,\n"
+                "L'équipe BAOU Finance\n"
+                "baoufinance@gmail.com"
             ),
             from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=[user.email],
@@ -371,18 +370,11 @@ def send_welcome_email(user):
 
 
 def send_password_reset_email(user):
-    """Meme mecanique que send_welcome_email, mais le token sert de *code* a
-    copier-coller dans l'appli plutot qu'un lien a suivre : pas de parsing de
-    deep link cote Flutter a construire pour ce flux (voir verify_email pour
-    le cas ou un simple "ouvrir l'app" suffit)."""
+    """Envoi du code de réinitialisation de mot de passe depuis baoufinance@gmail.com."""
     token = jwt.encode(
         {
             "userId": user.id,
             "purpose": "reset_password",
-            # ponytail: empreinte du mot de passe actuel -> le code devient
-            # caduc des qu'il a servi (le hash change), sans colonne ni table
-            # de jetons a stocker. Avant, le meme code marchait autant de fois
-            # qu'on voulait pendant 1 h.
             "pw": hashlib.sha256(user.password.encode()).hexdigest()[:16],
             "exp": dt.datetime.now(dt.timezone.utc) + dt.timedelta(hours=1),
         },
@@ -390,7 +382,7 @@ def send_password_reset_email(user):
         algorithm="HS256",
     )
     zavu.send(user.whatsapp,
-              f"BAOU Finance : votre code de reinitialisation (valable 1h) est {token}")
+              f"BAOU Finance : votre code de réinitialisation (valable 1h) est {token}")
     if not settings.EMAIL_HOST_PASSWORD:
         return
     try:
@@ -398,12 +390,14 @@ def send_password_reset_email(user):
             subject="BAOU Finance — Réinitialisation de votre mot de passe",
             message=(
                 f"Bonjour {user.name},\n\n"
-                "Voici votre code de reinitialisation (valable 1 heure) :\n\n"
+                "Vous avez demandé la réinitialisation de votre mot de passe BAOU Finance.\n\n"
+                "Voici votre code de réinitialisation sécurisé (valable 1 heure) :\n\n"
                 f"{token}\n\n"
-                "Ouvrez l'application BAOU, allez sur \"Mot de passe oublie\", "
-                "puis collez ce code avec votre nouveau mot de passe.\n\n"
-                "Si vous n'etes pas a l'origine de cette demande, ignorez cet email.\n\n"
-                "L'equipe BAOU Finance"
+                "Ouvrez l'application BAOU, allez sur \"Mot de passe oublié\", "
+                "puis collez ce code avec votre nouveau mot de passe (au moins 8 caractères avec un mélange de lettres et de chiffres).\n\n"
+                "Si vous n'êtes pas à l'origine de cette demande, vous pouvez ignorer cet e-mail.\n\n"
+                "L'équipe BAOU Finance\n"
+                "baoufinance@gmail.com"
             ),
             from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=[user.email],
