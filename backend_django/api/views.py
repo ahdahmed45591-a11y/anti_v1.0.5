@@ -427,13 +427,22 @@ def request_password_reset(request):
     })
 
 
+def validate_password_strength(password):
+    if len(password) < 8:
+        return "Le mot de passe doit contenir au moins 8 caractères."
+    if not (any(c.isalpha() for c in password) and any(c.isdigit() for c in password)):
+        return "Le mot de passe doit contenir un mélange de lettres et de chiffres."
+    return None
+
+
 @api_view(["POST"])
 @throttle_classes([AuthThrottle])
 def reset_password(request):
     token = request.data.get("token") or ""
     new_password = request.data.get("newPassword") or ""
-    if len(new_password) < 6:
-        return Response({"error": "Le mot de passe doit contenir au moins 6 caractères."}, status=400)
+    err = validate_password_strength(new_password)
+    if err:
+        return Response({"error": err}, status=400)
     try:
         payload = jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
     except jwt.PyJWTError:
@@ -466,6 +475,11 @@ def register(request):
 
     if not email or not password or not name:
         return Response({"error": "Email, mot de passe et nom/prénom sont requis."}, status=400)
+
+    err = validate_password_strength(password)
+    if err:
+        return Response({"error": err}, status=400)
+
     if User.objects.filter(email__iexact=email).exists():
         return Response({"error": "Un compte existe déjà avec cet email."}, status=409)
 

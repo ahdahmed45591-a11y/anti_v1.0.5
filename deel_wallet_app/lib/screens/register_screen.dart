@@ -14,6 +14,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _form = GlobalKey<FormState>();
   final _name = TextEditingController();
   final _email = TextEditingController();
+  final _confirmEmail = TextEditingController();
   final _password = TextEditingController();
   final _confirm = TextEditingController();
   bool _busy = false;
@@ -23,6 +24,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   void dispose() {
     _name.dispose();
     _email.dispose();
+    _confirmEmail.dispose();
     _password.dispose();
     _confirm.dispose();
     super.dispose();
@@ -77,19 +79,40 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
+                  controller: _confirmEmail,
+                  keyboardType: TextInputType.emailAddress,
+                  decoration: const InputDecoration(labelText: "Confirmer l'e-mail"),
+                  validator: (v) {
+                    if ((v ?? '').trim().isEmpty) return "Confirmation de l'e-mail requise";
+                    if (v!.trim().toLowerCase() != _email.text.trim().toLowerCase()) {
+                      return "Les adresses e-mail ne correspondent pas";
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
                   controller: _password,
                   obscureText: _hide,
                   decoration: InputDecoration(
                     labelText: 'Mot de passe',
+                    helperText: 'Au moins 8 caractères (lettres et chiffres)',
                     suffixIcon: IconButton(
                       icon: Icon(
                           _hide ? Icons.visibility_off : Icons.visibility),
                       onPressed: () => setState(() => _hide = !_hide),
                     ),
                   ),
-                  validator: (v) => (v ?? '').length >= 4
-                      ? null
-                      : '4 caractères minimum',
+                  validator: (v) {
+                    final p = v ?? '';
+                    if (p.length < 8) return '8 caractères minimum requis';
+                    final hasLetter = p.contains(RegExp(r'[A-Za-z]'));
+                    final hasDigit = p.contains(RegExp(r'\d'));
+                    if (!hasLetter || !hasDigit) {
+                      return 'Mélange de lettres et de chiffres requis';
+                    }
+                    return null;
+                  },
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
