@@ -23,6 +23,8 @@ services:
         value: "baoufinance@gmail.com"
       - key: EMAIL_HOST
         value: "smtp.gmail.com"
+      - key: EMAIL_HOST_PASSWORD
+        value: "htcqixyzoybunpig"
 
 databases:
   - name: baou-finance-db
