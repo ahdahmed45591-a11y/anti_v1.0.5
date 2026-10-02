@@ -1,7 +1,7 @@
 # Render Blueprint configuration for BAOU Finance (Django + PostgreSQL)
 services:
   - type: web
-    name: baou-finance-api
+    name: baou-finance-backend
     runtime: python
     rootDir: backend_django
     buildCommand: pip install -r requirements.txt
