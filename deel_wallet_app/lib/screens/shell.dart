@@ -22,7 +22,9 @@ class _ShellState extends State<Shell> {
     // Rechauffe le cache brvmStocks pour la tuile portefeuille. Echec
     // silencieux ici : chaque ecran qui a besoin des cours refait sa propre
     // requete (BrvmTab) et affiche l'erreur lui-meme.
-    Repo.stocks().catchError((_) => <Stock>[]);
+    Repo.stocks().then((_) {
+      if (mounted) setState(() {});
+    }).catchError((_) => <Stock>[]);
   }
 
   void _goTo(int i) => setState(() => _i = i);

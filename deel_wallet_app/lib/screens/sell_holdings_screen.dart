@@ -28,6 +28,7 @@ class SellHoldingsScreen extends StatelessWidget {
                   itemBuilder: (context, i) {
                     final h = app.holdings[i];
                     final stock = findStock(h.ticker);
+                    final pru = h.avgPrice > 0 ? h.avgPrice : (stock?.price ?? 0);
                     return ListTile(
                       leading: CircleAvatar(
                           backgroundColor: brandOrange.withValues(alpha: .12),
@@ -35,7 +36,7 @@ class SellHoldingsScreen extends StatelessWidget {
                               style: const TextStyle(
                                   color: brandOrange, fontSize: 12, fontWeight: FontWeight.w700))),
                       title: Text(h.company),
-                      subtitle: Text('${h.quantity} titres détenus • PRU ${money(h.avgPrice)}'),
+                      subtitle: Text('${h.quantity} titres détenus • PRU ${money(pru)}'),
                       trailing: const Icon(Icons.chevron_right),
                       onTap: stock == null
                           ? null

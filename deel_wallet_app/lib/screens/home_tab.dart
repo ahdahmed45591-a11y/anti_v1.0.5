@@ -258,7 +258,8 @@ class HomeTab extends StatelessWidget {
 
   Widget _holdingTile(BuildContext context, Holding h) {
     final stock = findStock(h.ticker);
-    final value = h.quantity * (stock?.price ?? h.avgPrice);
+    final pru = h.avgPrice > 0 ? h.avgPrice : (stock?.price ?? 0);
+    final value = h.quantity * (stock?.price ?? pru);
     return ListTile(
       contentPadding: EdgeInsets.zero,
       leading: CircleAvatar(
@@ -266,7 +267,7 @@ class HomeTab extends StatelessWidget {
           child: Text(h.ticker.substring(0, 2),
               style: const TextStyle(color: brandGreen, fontSize: 12, fontWeight: FontWeight.w700))),
       title: Text(h.company),
-      subtitle: Text('${h.quantity} titres • PRU ${money(h.avgPrice)}'),
+      subtitle: Text('${h.quantity} titres • PRU ${money(pru)}'),
       trailing: Text(money(value), style: const TextStyle(fontWeight: FontWeight.w600)),
       onTap: stock == null
           ? null
