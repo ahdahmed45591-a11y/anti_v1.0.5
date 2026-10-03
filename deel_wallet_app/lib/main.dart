@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'screens.dart';
+import 'api.dart';
+import 'data.dart';
 
 // Orange, blanc, vert.
 const brandOrange = Color(0xFFFF6B00);
@@ -54,19 +56,31 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final prefs = await SharedPreferences.getInstance();
   final seenOnboarding = prefs.getBool(onboardingSeenKey) ?? false;
-  runApp(BaouFinanceApp(seenOnboarding: seenOnboarding));
+  final token = prefs.getString('auth_token');
+  if (token != null && token.isNotEmpty) {
+    Api.token = token;
+    try {
+      await app.refresh();
+    } catch (_) {}
+  }
+  runApp(BaouFinanceApp(
+      seenOnboarding: seenOnboarding, loggedIn: token != null && token.isNotEmpty));
 }
 
 class BaouFinanceApp extends StatelessWidget {
-  const BaouFinanceApp({super.key, required this.seenOnboarding});
+  const BaouFinanceApp(
+      {super.key, required this.seenOnboarding, required this.loggedIn});
   final bool seenOnboarding;
+  final bool loggedIn;
 
   @override
   Widget build(BuildContext context) => MaterialApp(
         title: 'BAOU',
         debugShowCheckedModeBanner: false,
         theme: theme,
-        home: seenOnboarding ? const LoginScreen() : const OnboardingScreen(),
+        home: loggedIn
+            ? const Shell()
+            : (seenOnboarding ? const LoginScreen() : const OnboardingScreen()),
       );
 }
 

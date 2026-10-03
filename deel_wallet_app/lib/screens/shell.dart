@@ -24,7 +24,7 @@ class _ShellState extends State<Shell> {
     // requete (BrvmTab) et affiche l'erreur lui-meme.
     Repo.stocks().then((_) {
       if (mounted) setState(() {});
-    }).catchError((_) => <Stock>[]);
+    }).catchError((_) {});
   }
 
   void _goTo(int i) => setState(() => _i = i);

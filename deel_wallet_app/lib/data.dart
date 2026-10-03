@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'api.dart';
 
 /// FCFA n'a pas de centimes en usage courant. Regroupement par espaces,
@@ -192,6 +193,8 @@ class Repo {
   static Future<void> login(String email, String password) async {
     final res = await Api.post('/api/auth/login', {'email': email, 'password': password});
     Api.token = res['token'] as String?;
+    final prefs = await SharedPreferences.getInstance();
+    if (Api.token != null) await prefs.setString('auth_token', Api.token!);
     app._applyUser((res['user'] as Map?)?.cast<String, dynamic>() ?? {});
   }
 
@@ -311,8 +314,10 @@ class AppState extends ChangeNotifier {
     spent = spentThisMonth;
   }
 
-  void logout() {
+  void logout() async {
     Api.token = null;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('auth_token');
     balance = 0;
     holdings = [];
     transactions = [];
