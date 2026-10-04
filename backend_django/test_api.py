@@ -101,7 +101,7 @@ def main():
     assert user["balance"] == 0 and user["kyc"] == "pending"
     assert user["emailVerified"] is False, user  # pas encore clique sur le lien recu par email
     call("POST", "/api/auth/register",
-         {"email": email, "password": "x", "name": "Doublon"}, expect=409)
+         {"email": email, "password": "password123", "name": "Doublon"}, expect=409)
     call("POST", "/api/auth/register", {"email": "", "password": "", "name": ""}, expect=400)
 
     # Lien de confirmation : redirige vers l'app (baou://), jamais un 200 JSON.
