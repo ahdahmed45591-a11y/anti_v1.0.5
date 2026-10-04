@@ -19,12 +19,18 @@ services:
         value: "0"
       - key: CORS_ALLOWED_ORIGINS
         value: "https://admin-six-beta-23.vercel.app"
-      - key: EMAIL_HOST_USER
-        value: "baoufinance@gmail.com"
       - key: EMAIL_HOST
-        value: "smtp.gmail.com"
+        value: "smtp.resend.com"
+      - key: EMAIL_PORT
+        value: "465"
+      - key: EMAIL_USE_SSL
+        value: "1"
+      - key: EMAIL_HOST_USER
+        value: "resend"
       - key: EMAIL_HOST_PASSWORD
-        value: "htcqixyzoybunpig"
+        sync: false
+      - key: DEFAULT_FROM_EMAIL
+        value: "BAOU Finance <onboarding@resend.dev>"
 
 databases:
   - name: baou-finance-db

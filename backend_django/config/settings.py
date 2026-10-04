@@ -23,24 +23,27 @@ if not JWT_SECRET:
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY") or JWT_SECRET
 UPLOAD_DIR = os.environ.get("UPLOAD_DIR", "/data/uploads")
 
-# Email de bienvenue (inscription) : compte Gmail du support. EMAIL_HOST_PASSWORD
-# doit etre un "mot de passe d'application" Google (pas le mot de passe du
-# compte -- Gmail refuse l'auth SMTP normale), genere sur
-# https://myaccount.google.com/apppasswords. Tant qu'il n'est pas renseigne,
-# l'envoi est simplement ignore (voir send_welcome_email) : l'inscription ne
-# doit jamais echouer a cause d'un email qui ne part pas.
-EMAIL_HOST = "smtp.gmail.com"
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "baoufinance@gmail.com")
-EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "htcqixyzoybunpig")
-DEFAULT_FROM_EMAIL = f"BAOU Finance <{EMAIL_HOST_USER}>"
-# ponytail: sans timeout, un SMTP sortant bloque (Render bloque parfois le
-# port 587) jusqu'a ce que gunicorn tue le worker par timeout (~30s) -- vu en
-# prod (Dockerfile: --workers 3) : ce crash pendant /api/auth/register
-# immobilisait un worker sur 3 pendant ~30s a chaque inscription. send_welcome_email
-# et send_password_reset_email catchent deja Exception -- ce timeout suffit a
-# echouer vite au lieu de pendre.
+# Charge les variables d'environnement locales (.env) s'il existe (ignore par git)
+for _env in [BASE_DIR / ".env", BASE_DIR.parent / ".env", BASE_DIR.parent / ".env.docker"]:
+    if _env.exists():
+        try:
+            with open(_env, encoding="utf-8") as _f:
+                for _l in _f:
+                    _l = _l.strip()
+                    if _l and not _l.startswith("#") and "=" in _l:
+                        _k, _v = _l.split("=", 1)
+                        os.environ.setdefault(_k.strip(), _v.strip().strip('"').strip("'"))
+        except OSError:
+            pass
+
+# Service d'email transactionnel (Resend / SMTP).
+EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.resend.com")
+EMAIL_PORT = int(os.environ.get("EMAIL_PORT", 465))
+EMAIL_USE_SSL = os.environ.get("EMAIL_USE_SSL", "1") == "1"
+EMAIL_USE_TLS = not EMAIL_USE_SSL
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "resend")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
+DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "BAOU Finance <onboarding@resend.dev>")
 EMAIL_TIMEOUT = 10
 
 # URL publique du backend (ngrok ou domaine reel) utilisee pour construire le
