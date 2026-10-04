@@ -345,7 +345,7 @@ def send_welcome_email(user):
     link = f"{settings.BACKEND_PUBLIC_URL}/api/auth/verify-email?token={verify_token}"
     zavu.send(user.whatsapp,
               f"Bienvenue sur BAOU Finance, {user.name} ! Votre compte a bien été créé.")
-    if not settings.EMAIL_HOST_PASSWORD:
+    if not settings.EMAIL_HOST_PASSWORD or user.email.lower().endswith(("@baou.ci", "@example.com", "@test.ci", "@test.com", "@local")):
         return
     try:
         send_mail(
@@ -383,7 +383,7 @@ def send_password_reset_email(user):
     )
     zavu.send(user.whatsapp,
               f"BAOU Finance : votre code de réinitialisation (valable 1h) est {token}")
-    if not settings.EMAIL_HOST_PASSWORD:
+    if not settings.EMAIL_HOST_PASSWORD or user.email.lower().endswith(("@baou.ci", "@example.com", "@test.ci", "@test.com", "@local")):
         return
     try:
         send_mail(

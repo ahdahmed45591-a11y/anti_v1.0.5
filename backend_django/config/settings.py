@@ -36,14 +36,14 @@ for _env in [BASE_DIR / ".env", BASE_DIR.parent / ".env", BASE_DIR.parent / ".en
         except OSError:
             pass
 
-# Service d'email transactionnel (Resend / SMTP).
-EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.resend.com")
+# Service d'email transactionnel (Gmail SMTP SSL ou surcharge via variables d'environnement).
+EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.gmail.com")
 EMAIL_PORT = int(os.environ.get("EMAIL_PORT", 465))
 EMAIL_USE_SSL = os.environ.get("EMAIL_USE_SSL", "1") == "1"
 EMAIL_USE_TLS = not EMAIL_USE_SSL
-EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "resend")
-EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
-DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "BAOU Finance <onboarding@resend.dev>")
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "baoufinance@gmail.com")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "htcqixyzoybunpig")
+DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", f"BAOU Finance <{EMAIL_HOST_USER}>")
 EMAIL_TIMEOUT = 10
 
 # URL publique du backend (ngrok ou domaine reel) utilisee pour construire le
