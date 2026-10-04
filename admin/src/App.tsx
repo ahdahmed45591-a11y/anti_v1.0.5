@@ -234,7 +234,9 @@ export default function App() {
   useEffect(() => {
     if (isLoggedIn && token) {
       fetchAllData(token);
-      const interval = setInterval(() => fetchAllData(token), 15000); // refresh every 15s
+      // ponytail: 45 s au lieu de 15 s -- 3 requetes toutes les 15 s saturaient les 2 workers
+      // Gunicorn sur l'instance Render gratuite (0.1 CPU) et ralentissaient l'application mobile.
+      const interval = setInterval(() => fetchAllData(token), 45000);
       return () => clearInterval(interval);
     }
   }, [isLoggedIn, token, fetchAllData]);

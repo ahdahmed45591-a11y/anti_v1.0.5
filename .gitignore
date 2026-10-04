@@ -28,3 +28,9 @@ backups/
 
 # Documents juridiques prives (associes, pas de code)
 contrat_repartition_droits_BAOU.pdf
+
+# Builds et caches
+*.apk
+BAOU-Finance-Mobile.apk/
+.vercel/
+admin/.vercel/
