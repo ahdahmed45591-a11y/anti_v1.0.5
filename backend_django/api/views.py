@@ -1428,3 +1428,40 @@ def admin_user_kyc(request, user_id):
     if status_ != before:
         zavu.send(user.whatsapp, f"BAOU Finance : {_KYC_NOTIFY_TEXT[status_]}")
     return Response({"success": True, "data": {"id": user.id, "name": user.name, "kyc": user.kyc}})
+
+
+@api_view(["DELETE"])
+@require_auth(admin=True)
+def admin_delete_user(request, user_id):
+    """Supprime un compte utilisateur et ses donnees associees (reserve a l'admin).
+    Protege les comptes systeme indispensables (Admin BAOU et Abou Demo)."""
+    user = User.objects.filter(id=user_id).first()
+    if not user:
+        return Response({"error": "Utilisateur introuvable."}, status=404)
+    if user.email in ("admin@elephantbourse.ci", "demo@baou.ci") or user.id in ("ADMIN-001", "CLI-DEMO-001"):
+        return Response({"error": "Impossible de supprimer ce compte système protégé."}, status=400)
+    with db_transaction.atomic():
+        LedgerEntry.objects.filter(user=user).delete()
+        Transaction.objects.filter(user=user).delete()
+        Message.objects.filter(user=user).delete()
+        user_name, user_email = user.name, user.email
+        user.delete()
+    audit(request, "account.delete", target_id=user_id, before=f"{user_name} ({user_email})", after="deleted")
+    return Response({"success": True, "message": f"Compte {user_name} ({user_email}) supprimé avec succès."})
+
+
+@api_view(["POST"])
+@require_auth(admin=True)
+def admin_cleanup_users(request):
+    """Supprime tous les comptes de test sauf Admin BAOU et Abou Demo."""
+    to_delete = User.objects.exclude(email__in=["admin@elephantbourse.ci", "demo@baou.ci"]).exclude(id__in=["ADMIN-001", "CLI-DEMO-001"])
+    count = to_delete.count()
+    deleted_emails = list(to_delete.values_list("email", flat=True))
+    with db_transaction.atomic():
+        LedgerEntry.objects.filter(user__in=to_delete).delete()
+        Transaction.objects.filter(user__in=to_delete).delete()
+        Message.objects.filter(user__in=to_delete).delete()
+        to_delete.delete()
+    audit(request, "account.cleanup", before=f"{count} comptes", after="admin & demo conservés")
+    return Response({"success": True, "deletedCount": count, "deletedEmails": deleted_emails})
+
