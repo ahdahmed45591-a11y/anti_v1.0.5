@@ -11,8 +11,9 @@ const _baseUrl = 'https://baou-finance-backend.onrender.com';
 const _timeout = Duration(seconds: 60);
 
 class ApiException implements Exception {
-  ApiException(this.message);
+  ApiException(this.message, [this.status]);
   final String message;
+  final int? status;
   @override
   String toString() => message;
 }
@@ -44,7 +45,8 @@ class Api {
       // des vues ecrites a la main dans ce projet.
       throw ApiException(
           (body['error'] ?? body['message'] ?? body['detail'] ?? 'Erreur serveur (${r.statusCode}).')
-              .toString());
+              .toString(),
+          r.statusCode);
     }
     return body;
   }

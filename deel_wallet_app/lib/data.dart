@@ -177,9 +177,10 @@ class Repo {
   static Future<Map<String, dynamic>> initDeposit(double amount) =>
       Api.post('/api/transactions', {'type': 'DEPOSIT', 'price': amount});
 
-  /// Ordre d'achat : cree une transaction BUY "pending". Le solde n'est
-  /// debite qu'a la validation admin (voir validate_transaction) — le
-  /// serveur refuse deja si le solde est insuffisant au moment de l'ordre.
+  /// Ordre d'achat : cree une transaction BUY "pending". Le montant est gele
+  /// (debite) des la creation de l'ordre et rembourse si l'admin rejette
+  /// (voir create_transaction / reject_transaction) — le serveur refuse
+  /// deja si le solde est insuffisant.
   static Future<void> buy(Stock stock, int qty) => Api.post(
       '/api/transactions', {'type': 'BUY', 'ticker': stock.ticker, 'quantity': qty, 'price': stock.price});
 
@@ -287,15 +288,14 @@ class AppState extends ChangeNotifier {
     var dividends = 0.0;
     var spentThisMonth = 0.0;
     final now = DateTime.now();
-    for (final t in transactions) {
+    // ponytail: l'API renvoie le plus recent d'abord ; on parcourt du plus
+    // ancien au plus recent pour que le PRU (moyenne ponderee des achats)
+    // ne soit jamais calcule apres une vente. Une vente ne change pas le PRU.
+    for (final t in transactions.reversed) {
       if (t.status != 'validated') continue;
       if ((t.type == 'BUY' || t.type == 'SELL') && t.ticker.isNotEmpty) {
-        // ponytail: putIfAbsent(qty: 0) plutot que "creer seulement sur BUY"
-        // -- l'historique est trie du plus recent au plus ancien, donc une
-        // vente peut apparaitre avant l'achat correspondant dans la boucle ;
-        // le total final est correct quel que soit l'ordre de parcours.
         final h = byTicker.putIfAbsent(
-            t.ticker, () => Holding(t.ticker, t.company.isNotEmpty ? t.company : t.ticker, 0, t.unitPrice));
+            t.ticker, () => Holding(t.ticker, t.company.isNotEmpty ? t.company : t.ticker, 0, 0));
         if (t.type == 'BUY') {
           final newQty = h.quantity + t.quantity;
           h.avgPrice = ((h.avgPrice * h.quantity) + (t.unitPrice * t.quantity)) / newQty;

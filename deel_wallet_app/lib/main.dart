@@ -56,11 +56,17 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final prefs = await SharedPreferences.getInstance();
   final seenOnboarding = prefs.getBool(onboardingSeenKey) ?? false;
-  final token = prefs.getString('auth_token');
+  var token = prefs.getString('auth_token');
   if (token != null && token.isNotEmpty) {
     Api.token = token;
     try {
       await app.refresh();
+    } on ApiException catch (e) {
+      if (e.status == 401) {
+        // Jeton expire (24 h) : retour a l'ecran de connexion.
+        Api.token = token = null;
+        await prefs.remove('auth_token');
+      }
     } catch (_) {}
   }
   runApp(BaouFinanceApp(
